@@ -1,0 +1,635 @@
+{
+  "nodes": [
+    {
+      "name": "_CaseFilter",
+      "type": "class",
+      "defined_in": "example.py",
+      "line_number": 11,
+      "end_line_number": 22
+    },
+    {
+      "name": "ttype",
+      "type": "variable",
+      "value_type": "constant",
+      "value_repr": "None",
+      "defined_in": "_CaseFilter",
+      "line_number": 12,
+      "end_line_number": 12
+    },
+    {
+      "name": "__init__",
+      "type": "function",
+      "defined_in": "_CaseFilter",
+      "line_number": 14,
+      "end_line_number": 16,
+      "arguments": [
+        {
+          "name": "self",
+          "default": null,
+          "annotation": null
+        },
+        {
+          "name": "case",
+          "default": "None",
+          "annotation": null
+        }
+      ],
+      "calls": [
+        "getattr"
+      ],
+      "returns": []
+    },
+    {
+      "name": "case",
+      "type": "variable",
+      "value_type": "complex",
+      "value_repr": "BoolOp(Or(), [Name('case', Load()), Constant('upper')])",
+      "defined_in": "__init__",
+      "line_number": 15,
+      "end_line_number": 15
+    },
+    {
+      "name": "process",
+      "type": "function",
+      "defined_in": "_CaseFilter",
+      "line_number": 18,
+      "end_line_number": 22,
+      "arguments": [
+        {
+          "name": "self",
+          "default": null,
+          "annotation": null
+        },
+        {
+          "name": "stream",
+          "default": null,
+          "annotation": null
+        }
+      ],
+      "calls": [
+        "convert"
+      ],
+      "returns": []
+    },
+    {
+      "name": "value",
+      "type": "variable",
+      "value_type": "method_call",
+      "value_repr": "convert(...)",
+      "defined_in": "process",
+      "line_number": 21,
+      "end_line_number": 21
+    },
+    {
+      "name": "KeywordCaseFilter",
+      "type": "class",
+      "defined_in": "example.py",
+      "line_number": 25,
+      "end_line_number": 26
+    },
+    {
+      "name": "ttype",
+      "type": "variable",
+      "value_type": "complex",
+      "value_repr": "Attribute(Name('T', Load()), 'Keyword', Load())",
+      "defined_in": "KeywordCaseFilter",
+      "line_number": 26,
+      "end_line_number": 26
+    },
+    {
+      "name": "IdentifierCaseFilter",
+      "type": "class",
+      "defined_in": "example.py",
+      "line_number": 29,
+      "end_line_number": 36
+    },
+    {
+      "name": "ttype",
+      "type": "variable",
+      "value_type": "complex",
+      "value_repr": "Tuple([Attribute(Name('T', Load()), 'Name', Load()), Attribute(Attribute(Name('T', Load()), 'String', Load()), 'Symbol', Load())], Load())",
+      "defined_in": "IdentifierCaseFilter",
+      "line_number": 30,
+      "end_line_number": 30
+    },
+    {
+      "name": "process",
+      "type": "function",
+      "defined_in": "IdentifierCaseFilter",
+      "line_number": 32,
+      "end_line_number": 36,
+      "arguments": [
+        {
+          "name": "self",
+          "default": null,
+          "annotation": null
+        },
+        {
+          "name": "stream",
+          "default": null,
+          "annotation": null
+        }
+      ],
+      "calls": [
+        "convert",
+        "strip"
+      ],
+      "returns": []
+    },
+    {
+      "name": "value",
+      "type": "variable",
+      "value_type": "method_call",
+      "value_repr": "convert(...)",
+      "defined_in": "process",
+      "line_number": 35,
+      "end_line_number": 35
+    },
+    {
+      "name": "TruncateStringFilter",
+      "type": "class",
+      "defined_in": "example.py",
+      "line_number": 39,
+      "end_line_number": 59
+    },
+    {
+      "name": "__init__",
+      "type": "function",
+      "defined_in": "TruncateStringFilter",
+      "line_number": 40,
+      "end_line_number": 42,
+      "arguments": [
+        {
+          "name": "self",
+          "default": null,
+          "annotation": null
+        },
+        {
+          "name": "width",
+          "default": null,
+          "annotation": null
+        },
+        {
+          "name": "char",
+          "default": null,
+          "annotation": null
+        }
+      ],
+      "calls": [],
+      "returns": []
+    },
+    {
+      "name": "process",
+      "type": "function",
+      "defined_in": "TruncateStringFilter",
+      "line_number": 44,
+      "end_line_number": 59,
+      "arguments": [
+        {
+          "name": "self",
+          "default": null,
+          "annotation": null
+        },
+        {
+          "name": "stream",
+          "default": null,
+          "annotation": null
+        }
+      ],
+      "calls": [
+        "len",
+        "join"
+      ],
+      "returns": []
+    },
+    {
+      "name": "inner",
+      "type": "variable",
+      "value_type": "complex",
+      "value_repr": "Subscript(Name('value', Load()), Slice(Constant(2), UnaryOp(USub(), Constant(2))), Load())",
+      "defined_in": "process",
+      "line_number": 51,
+      "end_line_number": 51
+    },
+    {
+      "name": "quote",
+      "type": "variable",
+      "value_type": "constant",
+      "value_repr": "\"''\"",
+      "defined_in": "process",
+      "line_number": 52,
+      "end_line_number": 52
+    },
+    {
+      "name": "inner",
+      "type": "variable",
+      "value_type": "complex",
+      "value_repr": "Subscript(Name('value', Load()), Slice(Constant(1), UnaryOp(USub(), Constant(1))), Load())",
+      "defined_in": "process",
+      "line_number": 54,
+      "end_line_number": 54
+    },
+    {
+      "name": "quote",
+      "type": "variable",
+      "value_type": "constant",
+      "value_repr": "\"'\"",
+      "defined_in": "process",
+      "line_number": 55,
+      "end_line_number": 55
+    },
+    {
+      "name": "value",
+      "type": "variable",
+      "value_type": "method_call",
+      "value_repr": "join(...)",
+      "defined_in": "process",
+      "line_number": 58,
+      "end_line_number": 58
+    }
+  ],
+  "edges": [
+    {
+      "source": "example.py",
+      "target": "_CaseFilter",
+      "relation": "defines"
+    },
+    {
+      "source": "_CaseFilter",
+      "target": "ttype",
+      "relation": "defines_variable"
+    },
+    {
+      "source": "_CaseFilter",
+      "target": "__init__",
+      "relation": "contains_method"
+    },
+    {
+      "source": "__init__",
+      "target": "getattr",
+      "relation": "calls"
+    },
+    {
+      "source": "case",
+      "target": "__init__",
+      "relation": "used_in",
+      "line_number": 15
+    },
+    {
+      "source": "self",
+      "target": "__init__",
+      "relation": "used_in",
+      "line_number": 16
+    },
+    {
+      "source": "getattr",
+      "target": "__init__",
+      "relation": "used_in",
+      "line_number": 16
+    },
+    {
+      "source": "str",
+      "target": "__init__",
+      "relation": "used_in",
+      "line_number": 16
+    },
+    {
+      "source": "case",
+      "target": "__init__",
+      "relation": "used_in",
+      "line_number": 16
+    },
+    {
+      "source": "__init__",
+      "target": "case",
+      "relation": "defines_variable"
+    },
+    {
+      "source": "_CaseFilter",
+      "target": "process",
+      "relation": "contains_method"
+    },
+    {
+      "source": "stream",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 19
+    },
+    {
+      "source": "ttype",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 20
+    },
+    {
+      "source": "process",
+      "target": "convert",
+      "relation": "calls"
+    },
+    {
+      "source": "self",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 20
+    },
+    {
+      "source": "value",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 21
+    },
+    {
+      "source": "ttype",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 22
+    },
+    {
+      "source": "value",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 22
+    },
+    {
+      "source": "self",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 21
+    },
+    {
+      "source": "process",
+      "target": "value",
+      "relation": "defines_variable"
+    },
+    {
+      "source": "example.py",
+      "target": "KeywordCaseFilter",
+      "relation": "defines"
+    },
+    {
+      "source": "KeywordCaseFilter",
+      "target": "ttype",
+      "relation": "defines_variable"
+    },
+    {
+      "source": "example.py",
+      "target": "IdentifierCaseFilter",
+      "relation": "defines"
+    },
+    {
+      "source": "IdentifierCaseFilter",
+      "target": "ttype",
+      "relation": "defines_variable"
+    },
+    {
+      "source": "IdentifierCaseFilter",
+      "target": "process",
+      "relation": "contains_method"
+    },
+    {
+      "source": "stream",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 33
+    },
+    {
+      "source": "process",
+      "target": "convert",
+      "relation": "calls"
+    },
+    {
+      "source": "ttype",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 34
+    },
+    {
+      "source": "value",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 35
+    },
+    {
+      "source": "ttype",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 36
+    },
+    {
+      "source": "value",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 36
+    },
+    {
+      "source": "self",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 34
+    },
+    {
+      "source": "process",
+      "target": "strip",
+      "relation": "calls"
+    },
+    {
+      "source": "self",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 35
+    },
+    {
+      "source": "value",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 34
+    },
+    {
+      "source": "process",
+      "target": "value",
+      "relation": "defines_variable"
+    },
+    {
+      "source": "example.py",
+      "target": "TruncateStringFilter",
+      "relation": "defines"
+    },
+    {
+      "source": "TruncateStringFilter",
+      "target": "__init__",
+      "relation": "contains_method"
+    },
+    {
+      "source": "width",
+      "target": "__init__",
+      "relation": "used_in",
+      "line_number": 41
+    },
+    {
+      "source": "char",
+      "target": "__init__",
+      "relation": "used_in",
+      "line_number": 42
+    },
+    {
+      "source": "self",
+      "target": "__init__",
+      "relation": "used_in",
+      "line_number": 41
+    },
+    {
+      "source": "self",
+      "target": "__init__",
+      "relation": "used_in",
+      "line_number": 42
+    },
+    {
+      "source": "TruncateStringFilter",
+      "target": "process",
+      "relation": "contains_method"
+    },
+    {
+      "source": "stream",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 45
+    },
+    {
+      "source": "ttype",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 46
+    },
+    {
+      "source": "process",
+      "target": "len",
+      "relation": "calls"
+    },
+    {
+      "source": "process",
+      "target": "join",
+      "relation": "calls"
+    },
+    {
+      "source": "value",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 50
+    },
+    {
+      "source": "value",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 51
+    },
+    {
+      "source": "value",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 54
+    },
+    {
+      "source": "len",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 57
+    },
+    {
+      "source": "inner",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 57
+    },
+    {
+      "source": "self",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 57
+    },
+    {
+      "source": "ttype",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 59
+    },
+    {
+      "source": "value",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 59
+    },
+    {
+      "source": "ttype",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 47
+    },
+    {
+      "source": "value",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 47
+    },
+    {
+      "source": "quote",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 58
+    },
+    {
+      "source": "quote",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 58
+    },
+    {
+      "source": "T",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 46
+    },
+    {
+      "source": "inner",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 58
+    },
+    {
+      "source": "self",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 58
+    },
+    {
+      "source": "self",
+      "target": "process",
+      "relation": "used_in",
+      "line_number": 58
+    },
+    {
+      "source": "process",
+      "target": "inner",
+      "relation": "defines_variable"
+    },
+    {
+      "source": "process",
+      "target": "quote",
+      "relation": "defines_variable"
+    },
+    {
+      "source": "process",
+      "target": "inner",
+      "relation": "defines_variable"
+    },
+    {
+      "source": "process",
+      "target": "quote",
+      "relation": "defines_variable"
+    },
+    {
+      "source": "process",
+      "target": "value",
+      "relation": "defines_variable"
+    }
+  ]
+}
