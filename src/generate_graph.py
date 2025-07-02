@@ -575,3 +575,268 @@ def create_html_visualization(graph: nx.DiGraph, output_path: str):
 #     graph_file = os.path.join(project_dir, "dependency_graph.html")
 #     create_html_visualization(code_graph, graph_file)
 
+
+
+
+
+
+import os
+import json
+import networkx as nx
+import hashlib
+
+# --- Import the necessary functions from your existing scripts ---
+# Note: create_graph_from_metadata is now defined locally in this script.
+from extract_metadata_python import generate_metadata
+
+# ==============================================================================
+# UID GENERATION FUNCTIONS (Copied from generate_graph.py for local use)
+# ==============================================================================
+
+def generate_string_for_uid(entity: dict, file_path: str, delimiter: str = "||") -> str:
+    """
+    Creates a unique, hierarchical string for a code entity based on its type and scope.
+    This string is then hashed to create a final, unique ID.
+    """
+    entity_type = entity.get("type")
+
+    # MODIFIED: This section now ignores the alias for imports.
+    if entity_type in ("import", "from_import"):
+        module = entity.get("module", "")
+        name = entity.get("name", "")
+        # The 'alias' is intentionally ignored to create a canonical ID.
+        import_parts = ["import", module]
+        if name:
+            import_parts.append(name)
+        import_string = ".".join(filter(None, import_parts))
+        return f"{file_path}{delimiter}{import_string}"
+
+    id_parts = [file_path]
+    if entity.get("class"):
+        id_parts.append(entity["class"])
+    if entity.get("parent_function"):
+        id_parts.append(entity["parent_function"])
+
+    if entity_type == "class":
+        id_parts.append(entity['class_name'])
+    elif entity_type == "function":
+        id_parts.append(entity['function_name'])
+    elif entity_type == "assignment":
+        if entity.get("function") and entity.get("function") not in id_parts:
+             id_parts.append(entity["function"])
+        variable = entity.get("variable", "unknown_var")
+        line = entity.get("start_line", 0)
+        id_parts.append(f"{variable}@{line}")
+    else:
+        id_parts.append("unknown")
+        id_parts.append(entity.get('name', 'entity'))
+
+    return delimiter.join(id_parts)
+
+def get_unique_id(id_string: str) -> str:
+    """Generates a unique ID by hashing a given string."""
+    return hashlib.sha1(id_string.encode('utf-8')).hexdigest()
+
+# ==============================================================================
+# GRAPH CREATION (Revised and made local)
+# ==============================================================================
+
+def create_graph_from_metadata(metadata_collection: dict, project_root: str) -> nx.DiGraph:
+    """
+    Builds a comprehensive NetworkX DiGraph from project metadata, ensuring
+    all nodes (folders, files, code) use a consistent hashed UID.
+    """
+    G = nx.DiGraph()
+    defined_names = {}
+    path_to_uid = {}
+
+    # --- Pass 1: Create all nodes (structural and code) ---
+    print("--- Graph Creation: Pass 1 (Creating All Nodes) ---")
+    
+    # Add the root project folder node using a hashed UID
+    abs_project_root = os.path.abspath(project_root)
+    root_uid = get_unique_id(abs_project_root)
+    path_to_uid[abs_project_root] = root_uid
+    G.add_node(root_uid, label=os.path.basename(abs_project_root), node_type='folder', path=abs_project_root)
+
+    for file_path, metadata in metadata_collection.items():
+        # Create nodes for directories using hashed UIDs
+        abs_file_path = os.path.abspath(file_path)
+        current_parent_path = abs_project_root
+        path_parts = os.path.relpath(os.path.dirname(abs_file_path), abs_project_root).split(os.sep)
+        if path_parts == ['.']: path_parts = []
+
+        for part in path_parts:
+            next_path = os.path.join(current_parent_path, part)
+            if next_path not in path_to_uid:
+                folder_uid = get_unique_id(next_path)
+                path_to_uid[next_path] = folder_uid
+                G.add_node(folder_uid, label=part, node_type='folder', path=next_path)
+            current_parent_path = next_path
+        
+        # Add file node using a hashed UID
+        file_uid = get_unique_id(abs_file_path)
+        path_to_uid[abs_file_path] = file_uid
+        G.add_node(file_uid, label=os.path.basename(abs_file_path), node_type='file', path=abs_file_path)
+
+        # Create nodes for all code entities
+        all_entities = (metadata.get("imports", []) + metadata.get("classes", []) + 
+                        metadata.get("functions", []) + metadata.get("assignments", []))
+        
+        for entity in all_entities:
+            uid_string = generate_string_for_uid(entity, file_path)
+            uid = get_unique_id(uid_string)
+            
+            label, entity_type = "entity", entity.get("type")
+            if entity_type == 'class':
+                label = entity['class_name']
+                defined_names[label] = uid
+            elif entity_type == 'function':
+                label = entity['function_name']
+                full_name = f"{entity['class']}.{label}" if entity.get('class') else label
+                defined_names[full_name] = uid
+            elif entity_type == 'assignment':
+                label = entity['variable']
+            elif 'module' in entity:
+                label = entity.get('module') + (f".{entity.get('name')}" if entity.get('name') else "")
+
+            G.add_node(uid, label=label, **entity)
+
+    # --- Pass 2: Create all edges (containment and dependency) ---
+    print("--- Graph Creation: Pass 2 (Creating All Edges) ---")
+    
+    # Add structural 'contains' edges
+    for path, uid in path_to_uid.items():
+        parent_path = os.path.dirname(path)
+        if parent_path in path_to_uid and parent_path != path:
+            parent_uid = path_to_uid[parent_path]
+            G.add_edge(parent_uid, uid, type='contains')
+
+    for file_path, metadata in metadata_collection.items():
+        file_uid = path_to_uid[os.path.abspath(file_path)]
+        
+        # Add code entity 'contains' edges
+        for entity_list in metadata.values():
+            for entity in entity_list:
+                source_uid = get_unique_id(generate_string_for_uid(entity, file_path))
+                parent_uid = file_uid
+                if entity.get('type') == 'function' and entity.get('class'):
+                    if entity['class'] in defined_names:
+                        parent_uid = defined_names[entity['class']]
+                G.add_edge(parent_uid, source_uid, type='contains')
+
+        # Add dependency edges
+        for entity in metadata.get("classes", []) + metadata.get("functions", []):
+            source_uid = get_unique_id(generate_string_for_uid(entity, file_path))
+            if "bases" in entity:
+                for base in entity.get("bases", []):
+                    if base in defined_names: G.add_edge(source_uid, defined_names[base], type="inherits")
+            if "decorators" in entity:
+                for d in entity.get("decorators", []):
+                    if d in defined_names: G.add_edge(defined_names[d], source_uid, type="decorates")
+            if "calls" in entity:
+                for call in entity.get("calls", []):
+                    name = call["called"]
+                    if name in defined_names:
+                        G.add_edge(source_uid, defined_names[name], type="calls")
+                    else:
+                        if not G.has_node(name): G.add_node(name, label=name, node_type="external")
+                        G.add_edge(source_uid, name, type="calls")
+    return G
+
+# ==============================================================================
+# LINEAGE ANALYSIS FUNCTIONS (Unchanged)
+# ==============================================================================
+
+def find_node_by_label(graph: nx.DiGraph, node_label: str) -> str | None:
+    """Finds the first node in the graph that matches a given label."""
+    for node, data in graph.nodes(data=True):
+        if data.get('label') == node_label:
+            return node
+    print(f"Warning: Node with label '{node_label}' not found.")
+    return None
+
+def get_structural_lineage(graph: nx.DiGraph, node_id: str) -> list[str]:
+    """Traces the structural lineage of a node up to the root folder."""
+    if not graph.has_node(node_id): return [f"Node '{node_id}' not in graph."]
+    path, current_node = [], node_id
+    while current_node:
+        path.append(graph.nodes[current_node].get('label', current_node))
+        predecessors = graph.predecessors(current_node)
+        parent_node = next((p for p in predecessors if graph.get_edge_data(p, current_node).get('type') == 'contains'), None)
+        current_node = parent_node
+    return list(reversed(path))
+
+def get_downstream_dependencies(graph: nx.DiGraph, node_id: str) -> dict:
+    """Finds all nodes that the given node directly depends on (outgoing edges)."""
+    if not graph.has_node(node_id): return {"error": f"Node '{node_id}' not in graph."}
+    dependencies = {}
+    for successor in graph.successors(node_id):
+        edge_data = graph.get_edge_data(node_id, successor)
+        edge_type = edge_data.get('type')
+        if edge_type != 'contains':
+            dependencies.setdefault(edge_type, []).append(graph.nodes[successor].get('label', successor))
+    return dependencies
+
+def get_upstream_dependencies(graph: nx.DiGraph, node_id: str) -> dict:
+    """Finds all nodes that directly depend on the given node (incoming edges)."""
+    if not graph.has_node(node_id): return {"error": f"Node '{node_id}' not in graph."}
+    dependencies = {}
+    for predecessor in graph.predecessors(node_id):
+        edge_data = graph.get_edge_data(predecessor, node_id)
+        edge_type = edge_data.get('type')
+        if edge_type != 'contains':
+            dependencies.setdefault(edge_type, []).append(graph.nodes[predecessor].get('label', predecessor))
+    return dependencies
+
+# ==============================================================================
+# DEMONSTRATION (Unchanged)
+# ==============================================================================
+
+def process_project_directory(directory_path: str) -> dict:
+    """Helper function to scan a directory and generate metadata."""
+    project_metadata = {}
+    for root, _, files in os.walk(directory_path):
+        for file in files:
+            if file.endswith('.py'):
+                file_path = os.path.join(root, file)
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        source_code = f.read()
+                    metadata = generate_metadata(source_code)
+                    project_metadata[file_path] = metadata
+                except Exception as e:
+                    print(f"Could not process file {file_path}: {e}")
+    return project_metadata
+
+
+if __name__ == "__main__":
+    target_project_dir = '.'
+    print(f"--- Analyzing project in: {os.path.abspath(target_project_dir)} ---")
+    
+    metadata_collection = process_project_directory(target_project_dir)
+    code_graph = create_graph_from_metadata(metadata_collection, target_project_dir)
+
+    print(f"\n--- Graph created with {code_graph.number_of_nodes()} nodes and {code_graph.number_of_edges()} edges. ---")
+
+    target_label = "create_graph_from_metadata"
+    print(f"\n--- Analyzing lineage for node: '{target_label}' ---")
+    
+    target_node_id = find_node_by_label(code_graph, target_label)
+
+    if target_node_id:
+        structure = get_structural_lineage(code_graph, target_node_id)
+        print("\n[1] Structural Lineage (Where it is defined):")
+        print(" -> ".join(structure))
+        
+        downstream = get_downstream_dependencies(code_graph, target_node_id)
+        print("\n[2] Downstream Dependencies (What this object uses):")
+        if downstream:
+            for dep_type, items in downstream.items(): print(f"  - {dep_type.upper()}: {', '.join(items)}")
+        else: print("  - None")
+
+        upstream = get_upstream_dependencies(code_graph, target_node_id)
+        print("\n[3] Upstream Dependencies (What uses this object):")
+        if upstream:
+            for dep_type, items in upstream.items(): print(f"  - {dep_type.upper()}: {', '.join(items)}")
+        else: print("  - None")
